@@ -1019,3 +1019,79 @@ d['searchVO']['catMap']['gongbao']['listVO']
   'fwjg': None,
   'wjlx': '',
   'shixiao': ''}]
+
+  **Liaoning**
+
+  news(不好)
+
+  http://www.ln.gov.cn/zfxx/rdxx01_105674/index_1.html
+
+  total page 25
+
+http://www.ln.gov.cn/zfxx/msrd/index_1.html(不好)
+
+25
+
+http://www.ln.gov.cn/zfxx/tjdt/index_1.html
+
+25
+
+http://www.ln.gov.cn/zfxx/ghjh/bmgh/
+
+another method
+
+http://www.ln.gov.cn/zfxx/zfwj/szfl/index_1.html
+
+9
+
+http://www.ln.gov.cn/zfxx/zfwj/szfbgtwj/zfwj2011_136268/index_1.html
+
+2
+
+http://www.ln.gov.cn/zfxx/zfwj/szfwj/zfwj2011_140407/index.html
+
+1
+
+http://www.ln.gov.cn/zfxx/zfwj/bmwj/
+
+1
+
+In [4]: response.css('table.dataList tr')[1:][0].css('td')[1].css('a::attr(href)').get()                                                                                          
+Out[4]: './zfwj2011_119231/201801/t20180123_3150934.html'
+
+In [5]: response.css('table.dataList tr')[1:][0].css('td')[1].css('a::attr(title)').get()                                                                                         
+Out[5]: '辽宁省人民政府关于修改《辽宁省建设项目安全设施监督管理办法》的决定'
+
+In [6]: response.css('table.dataList tr')[1:][0].css('td')[2].css('::text').get()                                                                                                 
+Out[6]: '第312号'
+
+In [7]: response.css('table.dataList tr')[1:][0].css('td')[4].css('::text').get()                                                                                                 
+Out[7]: '2018-01-23'
+
+response.css('div#main *::text').getall()
+
+
+**Xizang**
+
+http://www.xizang.gov.cn/zwgk/xxfb/gsgg_428/
+
+total page 54
+
+In [2]: response.css('ul.zwyw_list li')[0].css('a::attr(href)').get()                                                                                                             
+Out[2]: './202004/t20200407_136481.html'
+
+In [3]: response.css('ul.zwyw_list li')[0].css('a::text').get()                                                                                                                   
+Out[3]: '西藏自治区人民政府驻成都办事处离任审计询价公告'
+
+In [4]: response.css('ul.zwyw_list li')[0].css('span::text').get()                                                                                                                
+Out[4]: '2020-04-07'
+
+response.css('table.table')
+response.css('table.table tr')
+response.css('table.table tr td.th')
+response.css('table.table tr td.td')
+
+In [6]: response.css('table.table tr td.th')[2].css('::text').get()                                                                                                               
+Out[6]: '文 \xa0\xa0\xa0\xa0 号'
+
+response.css('div.view *::text').getall()

@@ -5,30 +5,31 @@ import ast
 from urllib import parse
 from scrapy.selector import Selector
 
-class ZhejiangSpider(scrapy.Spider):
-    name = "Zhejiang"
+class XizangSpider(scrapy.Spider):
+    name = "Xizang"
     if not os.path.exists('../../data/HTML_pk/%s' % name):
         os.makedirs('../../data/HTML_pk/%s' % name)
     if not os.path.exists('../../data/text/%s' % name):
         os.makedirs('../../data/text/%s' % name)
     def start_requests(self):
-        total_page = 509
-        # total_page = 3 
-        url_base = 'http://www.zj.gov.cn/module/xxgk/search.jsp?infotypeId=&jdid=3096&area=000014349&divid=div1551294&vc_title=&vc_number=&sortfield=,compaltedate:0&currpage={0}&vc_filenumber=&vc_all=&texttype=0&fbtime=&texttype=0&fbtime=&vc_all=&vc_filenumber=&vc_title=&vc_number=&currpage=3&sortfield=,compaltedate:0'
+        # total_page = 3
+        total_page = 54
+        url_base = 'http://www.xizang.gov.cn/zwgk/xxfb/gsgg_428/index{0}.html'
         for i in range(total_page):
-            yield scrapy.Request(url=url_base.format(i+1), callback=self.parse)
+            page = '_'+ str(i+1) if i > 0 else ''
+            yield scrapy.Request(url=url_base.format(page), callback=self.parse)
 
     def parse(self,response):
         detail_page_links = []
-        for tr in response.css('tr')[4:-2]:
-            url = response.urljoin(tr.css('a::attr(href)').get())
+        for li in response.css('ul.zwyw_list li'):
+            url = response.urljoin(li.css('a::attr(href)').get())
             UID = url.split('/')[-1][:-5]
             detail_page_links.append(url)
             yield {
                 'UID': UID,
-                'title': tr.css('a::attr(mc)').get(),
-                'date': tr.css('a::attr(rq)').get(),
-                'FileNumber':tr.css('a::attr(wh)').get(),
+                'title': li.css('a::text').get(),
+                'date': li.css('span::text').get(),
+                'FileNumber':None,
                 'url': url,
                 'crawl state':'half'
             }
@@ -38,13 +39,23 @@ class ZhejiangSpider(scrapy.Spider):
         UID = response.url.split('/')[-1][:-5]
         with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
             pickle.dump(response.text,f)
-        paragraph_list = response.css('div.bt_content p *::text').getall()          
-        if len(paragraph_list) == 0:
-            paragraph_list =response.css('div#zoom p *::text').getall()           
+        doc_info_dict = {}
+        th_list = response.css('table.table tr td.th')
+        td_list = response.css('table.table tr td.td')
+        for i in range(len(th_list)):
+            key = th_list[i].css('::text').get()
+            value = td_list[i].css('::text').get()
+            doc_info_dict[key] = value
+        File_num = None
+        if '文 \xa0\xa0\xa0\xa0 号' in doc_info_dict.keys():
+            File_num = doc_info_dict['文 \xa0\xa0\xa0\xa0 号']
+        paragraph_list = response.css('div.view *::text').getall()
         with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
             f.write('\n'.join(paragraph_list))
         return {
             'UID': UID,
+            'FileNumber':File_num,
             'mainText': paragraph_list,
+            'doc_info_dict':doc_info_dict,
             'crawl state':'full',
         }
