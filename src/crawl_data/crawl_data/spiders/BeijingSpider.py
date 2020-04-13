@@ -51,6 +51,8 @@ class BeijingSpider(scrapy.Spider):
             doc_info_dict[key] = value
         full_tittle = container.css('div.header p::text').get()
         paragraph_list = container.css('div.mainTextBox p::text').getall()
+        if len(paragraph_list) == 0:
+            paragraph_list =  response.css('p *::text').getall() 
         Filenum = doc_info_dict["[发文字号] "] if "[发文字号] " in doc_info_dict.keys() else paragraph_list[0]
         if Filenum and '号' not in Filenum:
             Filenum = None

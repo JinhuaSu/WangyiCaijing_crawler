@@ -65,6 +65,8 @@ class Shaanxi_shanSpider(scrapy.Spider):
                 doc_info_dict[key] = value
             count+=1
         paragraph_list = response.css('div#info_content p *::text').getall()
+        if len(paragraph_list) == 0:
+            paragraph_list =  response.css('p *::text').getall() 
         attach = response.css('div.xzfwj_rig a[href$=".pdf"]::attr(href)').get()
         attach = response.urljoin(attach)
         length = len(''.join(paragraph_list))

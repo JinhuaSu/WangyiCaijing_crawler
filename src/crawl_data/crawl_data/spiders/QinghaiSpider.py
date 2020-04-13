@@ -45,6 +45,8 @@ class QinghaiSpider(scrapy.Spider):
             value = li.css("span")[1].css('::text').get()
             doc_info_dict[key] = value
         paragraph_list = response.css('div.view p *::text').getall()             
+        if len(paragraph_list) == 0:
+            paragraph_list =  response.css('p *::text').getall() 
         length = len(''.join(paragraph_list))
         if length > 0:
             state = 'full'

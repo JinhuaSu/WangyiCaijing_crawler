@@ -46,6 +46,8 @@ class ShanghaiSpider(scrapy.Spider):
         doc_info_dict['relative_doc_titles'] = response.css('ul.nowrapli li a::attr(title)').getall()
         doc_info_dict['relative_doc_links'] = response.css('ul.nowrapli li a::attr(href)').getall()
         paragraph_list = response.css('div#ivs_content p::text').getall()
+        if len(paragraph_list) == 0:
+            paragraph_list =  response.css('p *::text').getall() 
         Filenum = None
         if len(paragraph_list) > 0 and '号' in paragraph_list[0]:
             Filenum = paragraph_list[0]

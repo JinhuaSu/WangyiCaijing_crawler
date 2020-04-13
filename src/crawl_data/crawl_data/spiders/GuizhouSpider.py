@@ -49,6 +49,8 @@ class GuizhouSpider(scrapy.Spider):
         paragraph_list = response.css('div.view p *::text').getall()  
         if len(paragraph_list) == 0:
             paragraph_list = response.css('div#Zoom p *::text').getall()  
+        if len(paragraph_list) == 0:
+            paragraph_list =  response.css('p *::text').getall() 
         length = len(''.join(paragraph_list))
         if length > 0:
             state = 'full'

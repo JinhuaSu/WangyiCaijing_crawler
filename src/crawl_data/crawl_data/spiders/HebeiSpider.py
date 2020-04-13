@@ -52,6 +52,8 @@ class HebeiSpider(scrapy.Spider):
                 doc_info_dict[key] = value
             count+=1
         paragraph_list = response.css('div#zoom div *::text').getall()
+        if len(paragraph_list) == 0:
+            paragraph_list =  response.css('div *::text').getall() 
         length = len(''.join(paragraph_list))
         if length > 0:
             state = 'full'

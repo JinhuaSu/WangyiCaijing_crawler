@@ -41,6 +41,8 @@ class ZhejiangSpider(scrapy.Spider):
         paragraph_list = response.css('div.bt_content p *::text').getall()          
         if len(paragraph_list) == 0:
             paragraph_list =response.css('div#zoom p *::text').getall()           
+        if len(paragraph_list) == 0:
+            paragraph_list =  response.css('p *::text').getall() 
         length = len(''.join(paragraph_list))
         if length > 0:
             with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:

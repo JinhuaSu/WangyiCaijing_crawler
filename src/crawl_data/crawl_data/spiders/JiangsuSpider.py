@@ -57,6 +57,8 @@ class JiangsuSpider(scrapy.Spider):
             count+=1
         file_num = doc_info_dict['文\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0号'] if '文\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0号' in doc_info_dict.keys() else  None
         paragraph_list = response.css('div#zoom p *::text').getall() 
+        if len(paragraph_list) == 0:
+            paragraph_list =  response.css('p *::text').getall() 
         length = len(''.join(paragraph_list))
         if length > 0:
             state = 'full'

@@ -63,6 +63,8 @@ class AnhuiSpider(scrapy.Spider):
         if '文号：' in doc_info_dict.keys():
             File_num = doc_info_dict['文号：']
         paragraph_list =  response.css('div.wzcon p *::text').getall() 
+        if len(paragraph_list) == 0:
+            paragraph_list =  response.css('p *::text').getall() 
         length = len(''.join(paragraph_list))
         if length > 0:
             with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:

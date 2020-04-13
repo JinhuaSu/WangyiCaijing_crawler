@@ -54,6 +54,8 @@ class LiaoningSpider(scrapy.Spider):
         UID = response.url.split('/')[-1][:-5]
         paragraph_list = response.css('div#main *::text').getall()
         
+        if len(paragraph_list) == 0:
+            paragraph_list =  response.css('div *::text').getall() 
         length = len(''.join(paragraph_list))
         if length > 0:
             state = 'full'

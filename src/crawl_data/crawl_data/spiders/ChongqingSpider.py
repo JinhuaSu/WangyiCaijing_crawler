@@ -57,6 +57,8 @@ class ChongqingSpider(scrapy.Spider):
         if '文 号：' in doc_info_dict.keys():
             FileNum = doc_info_dict['文 号：']
         paragraph_list = response.css('div.gkxl-article p *::text').getall()
+        if len(paragraph_list) == 0:
+            paragraph_list =  response.css('p *::text').getall() 
         length = len(''.join(paragraph_list))
         if length > 0:
             state = 'full'

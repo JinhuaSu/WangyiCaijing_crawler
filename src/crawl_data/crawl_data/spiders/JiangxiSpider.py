@@ -62,6 +62,8 @@ class JiangxiSpider(scrapy.Spider):
         
         full_tittle = ''.join(response.css('div.bt-article-y p.sp_title::text').getall())
         paragraph_list = response.css('div.bt-article-y div#zoom p::text').getall()
+        if len(paragraph_list) == 0:
+            paragraph_list =  response.css('p *::text').getall() 
         FileNum = None
         if '文\xa0\xa0\xa0\xa0\xa0\xa0号:' in doc_info_dict.keys():
             FileNum = doc_info_dict['文\xa0\xa0\xa0\xa0\xa0\xa0号:']
