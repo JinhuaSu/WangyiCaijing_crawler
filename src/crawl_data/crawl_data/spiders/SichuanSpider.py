@@ -23,12 +23,17 @@ class SichuanSpider(scrapy.Spider):
         for tr in response.css('table')[1].css('tr')[1:]:
             url = response.urljoin(tr.css('td')[1].css('a::attr(href)').get())
             UID = url.split('=')[-1]
-            detail_page_links.append(url)
+            if '?' not in UID:
+                detail_page_links.append(url)
+            date = tr.css('td')[2].css('::text').get()
+            if date and len(date) > 3:
+                date = date.replace(' ','').replace('\xa0','').replace('\r','').replace('\n','')
             yield {
                 'UID': UID,
                 'title': tr.css('td')[1].css('a::attr(title)').get(),
-                'date': tr.css('td')[2].css('::text').get(),
+                'date': date,
                 'FileNumber':tr.css('td')[3].css('::text').get(),
+                'text length':0,
                 'url': url,
                 'crawl state':'half'
             }
@@ -36,13 +41,19 @@ class SichuanSpider(scrapy.Spider):
 
     def parse_content(self, response):
         UID = response.url.split('=')[-1]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         paragraph_list = response.css('td p *::text').getall()
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'mainText': paragraph_list,
-            'crawl state':'full',
+            'crawl state':state,
+            'text length':length,
         }

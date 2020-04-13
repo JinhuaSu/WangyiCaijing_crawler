@@ -27,11 +27,14 @@ class NeimengguSpider(scrapy.Spider):
             for piece in response.css('tr.tr_main_value_%s' % sign):
                 url = piece.css('td a::attr(href)').get()
                 UID = url.split('/')[-1][:-5]
-                detail_page_links.append(url)
+                if '?' not in UID:
+                    detail_page_links.append(url)
                 yield {
                     'UID': UID,
                     'title': piece.css('td a::attr(title)').get(),
                     'date': piece.css('td[width="120"]::text').get(),
+                    'FileNumber':None,
+                    'text length':0,
                     'url': url,
                     'crawl state':'half'
                 }
@@ -39,8 +42,6 @@ class NeimengguSpider(scrapy.Spider):
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-5]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         doc_info_dict = {}
         count = 0
         for td in response.css('table.xxgk_table td'):
@@ -52,13 +53,21 @@ class NeimengguSpider(scrapy.Spider):
             count+=1
         filenum = doc_info_dict['文\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0号'] if '文\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0号' in doc_info_dict.keys() else ''
         paragraph_list = response.css('div#zoom p *::text').getall()
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'doc_info_dict': doc_info_dict,
             'FileNumber':filenum,
             'mainText': paragraph_list,
-            'crawl state':'full',
+            'crawl state':state,
+            'text length':length,
         }
 

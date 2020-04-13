@@ -33,28 +33,40 @@ class LiaoningSpider(scrapy.Spider):
         for tr in response.css('table.dataList tr')[1:]:
             td_list = tr.css('td')
             href = response.urljoin(td_list[0+td_base].css('a::attr(href)').get())
-            detail_page_links.append(href)
             UID = href.split('/')[-1][:-5]
+            if '?' not in UID:
+                detail_page_links.append(href)
+            date = td_list[2+td_base].css('::text').get() 
+            if date and len(date) > 3:
+                date = date.replace('年','-').replace('月','-').replace('日','')
             yield {
                 'UID': UID,
                 'title': td_list[0+td_base].css('a::attr(title)').get(),
-                'date': td_list[2+td_base].css('::text').get(),
+                'date': date,
                 'FileNumber':td_list[1+td_base].css('::text').get(),
                 'url': href,
+                'text length':0,
                 'crawl state':'half'
             }
         yield from response.follow_all(detail_page_links, callback = self.parse_content)
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-5]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         paragraph_list = response.css('div#main *::text').getall()
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'mainText': paragraph_list,
-            'crawl state':'full',
+            'crawl state':state,
+            'text length':length,
         }
 

@@ -34,7 +34,8 @@ class JiangxiSpider(scrapy.Spider):
             href = piece.css('td a::attr(href)').get()
             UID = href.split('/')[-1]
             UID = UID.split('?')[0][:-5]
-            detail_page_links.append(href)
+            if '?' not in UID:
+                detail_page_links.append(href)
             yield {
                 'UID': UID,
                 'docID': piece.css('td a::attr(syh)').get(),
@@ -42,6 +43,7 @@ class JiangxiSpider(scrapy.Spider):
                 'date': piece.css('td a::attr(rq)').get(),
                 'FileNumber':None,
                 'url': response.urljoin(href),
+                'text length':0,
                 'crawl state':'half'
             } 
         
@@ -50,8 +52,6 @@ class JiangxiSpider(scrapy.Spider):
     def parse_content(self, response):
         UID = response.url.split('/')[-1]
         UID = UID.split('?')[0][:-5]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         values = response.css('div.bt-article-y')[0].css('tr td::text').getall()
         keys = response.css('div.bt-article-y')[0].css('tr td b span::text').getall() +\
            response.css('div.bt-article-y')[0].css('tr td b::text').getall()
@@ -65,10 +65,17 @@ class JiangxiSpider(scrapy.Spider):
         FileNum = None
         if '文\xa0\xa0\xa0\xa0\xa0\xa0号:' in doc_info_dict.keys():
             FileNum = doc_info_dict['文\xa0\xa0\xa0\xa0\xa0\xa0号:']
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
         attachment_link = response.css('div.bt-article-y div#zoom p a::attr(href)').getall()
         attachment_link = [link for link in attachment_link if link[:16]=='/module/download']
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'full_tittle': full_tittle,
@@ -76,6 +83,7 @@ class JiangxiSpider(scrapy.Spider):
             'doc_info_dict': doc_info_dict,
             'mainText': paragraph_list,
             'attachment_link': attachment_link,
-            'crawl state':'full',
+            'crawl state':state,
+            'text length':length,
         }
 

@@ -30,13 +30,15 @@ class JiangsuSpider(scrapy.Spider):
         detail_page_links = []
         for record in Selector(text = response.css('div#297589 *::text').get()).css('record'):
             url = record.css('a::attr(href)').get()
-            detail_page_links.append(url)
+            if '?' not in UID:
+                detail_page_links.append(url)
             UID = url.split('/')[-1][:-5]
             yield {
                 'UID': UID,
                 'title': record.css('a::attr(title)').get(),
                 'date': record.css('b::text').get(),
                 'FileNumber':None,
+                'text length':0,
                 'url': url,
                 'crawl state':'half'
             }
@@ -44,8 +46,6 @@ class JiangsuSpider(scrapy.Spider):
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-5]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         doc_info_dict = {}
         count = 0
         for td in response.css('tbody td'):
@@ -57,11 +57,19 @@ class JiangsuSpider(scrapy.Spider):
             count+=1
         file_num = doc_info_dict['文\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0号'] if '文\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0号' in doc_info_dict.keys() else  None
         paragraph_list = response.css('div#zoom p *::text').getall() 
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'mainText': paragraph_list,
             'FileNumber': file_num,
-            'crawl state':'full',
+            'crawl state':state,
+            'text length':length,
         }

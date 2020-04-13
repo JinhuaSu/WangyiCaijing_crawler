@@ -25,27 +25,35 @@ class HunanSpider(scrapy.Spider):
             url = tr.css('a::attr(href)').get()
             url = response.urljoin(url)
             UID = url.split('/')[-1][:-5]
-            detail_page_links.append(url)
+            if '?' not in UID:
+                detail_page_links.append(url)
             yield {
                 'UID': UID,
                 'title': tr.css('a::text').get(),
                 'date': tr.css('td')[-2].css('::text').get(),
                 'FileNumber': tr.css('td')[-3].css('::text').get().split("'")[1],
                 'url': url,
+                'text length':0,
                 'crawl state':'half'
             }
         yield from response.follow_all(detail_page_links, callback = self.parse_content)
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-5]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         paragraph_list = response.css('div#zoom p *::text').getall() 
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'mainText': paragraph_list,
-            'crawl state':'full',
+            'crawl state':state,
+            'text length':length,
         }
 

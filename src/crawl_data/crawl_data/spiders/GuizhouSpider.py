@@ -25,30 +25,43 @@ class GuizhouSpider(scrapy.Spider):
         for li in response.css('div.right-list-box ul li'):
             url = li.css('a::attr(href)').get()
             UID = url.split('/')[-1][:-5]
-            detail_page_links.append(url)
+            if '?' not in UID:
+                detail_page_links.append(url)
             title = li.css('a::attr(title)').get()
             file_num = title.split('（')[-1]
             file_num = file_num.split('(')[-1][:-1]
+            date = li.css('span::text').get()
+            if date and len(date) > 10:
+                date = date[:10]
             yield {
                 'UID': UID,
                 'title': title,
-                'date': li.css('span::text').get(),
+                'date': date,
                 'FileNumber': file_num,
                 'url': url,
+                'text length':0,
                 'crawl state':'half'
             }
         yield from response.follow_all(detail_page_links, callback = self.parse_content)
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-5]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         paragraph_list = response.css('div.view p *::text').getall()  
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        if len(paragraph_list) == 0:
+            paragraph_list = response.css('div#Zoom p *::text').getall()  
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'mainText': paragraph_list,
-            'crawl state':'full',
+            'crawl state':state,
+            'text length':length,
         }
 

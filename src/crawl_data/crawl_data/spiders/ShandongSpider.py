@@ -24,13 +24,15 @@ class ShandongSpider(scrapy.Spider):
         for div in response.css('div.wip_lists'):
             url = div.css('a::attr(href)').get()
             UID = url.split('/')[-1][:-16]
-            detail_page_links.append(url)
+            if '?' not in UID:
+                detail_page_links.append(url)
             date = '-'.join(url.split('/')[-4:-1])
             yield {
                 'UID': UID,
                 'title': div.css('a::text').get(),
                 'date': date,
                 'FileNumber':None,
+                'text length':0,
                 'url': url,
                 'crawl state':'half'
             }
@@ -38,21 +40,31 @@ class ShandongSpider(scrapy.Spider):
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-16]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
 
         paragraph_list = response.css('div.wip_art_con p *::text').getall()
         if len(paragraph_list) == 0:
             paragraph_list = response.css('div#zoom p *::text').getall()
+        if len(paragraph_list) == 0:
+            paragraph_list = response.css('p *::text').getall()
         if len(response.css('div.wip_art_con p')) >= 2:
             File_num = response.css('div.wip_art_con p')[1].css('::text').get()
         else:
             File_num = None
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        if File_num and '号' not in File_num:
+            File_num = None
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'FileNumber':File_num,
             'mainText': paragraph_list,
-            'crawl state':'full',
+            'crawl state':state,
+            'text length':length,
         }

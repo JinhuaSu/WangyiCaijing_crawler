@@ -28,24 +28,33 @@ class JilinSpider(scrapy.Spider):
                 'date':piece_dict['tip']['dates'],
                 'FileNumber':piece_dict['tip']['filenum'],
                 'publisher':piece_dict['tip']['publisher'],
+                'text length':0,
                 'crawl state':'half',
             }
-            detail_page_links.append(item['url'])
+            if '?' not in item['UID']:
+                detail_page_links.append(item['url'])
             yield item
         yield from response.follow_all(detail_page_links, callback = self.parse_content)
 
     def parse_content(self, response):
         UID = response.url.split('_')[-1][:-5]
-        state = 'full' if response.status == 200 else 'false'
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
+        state = 'full' if response.status == 200 else 'half'
         paragraph_list = response.css('div.zlyxwz_t2a p *::text').getall()
         attachment_links = response.css('div.zlyxwz_t2a p a::attr(href)').getall()        
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'mainText': paragraph_list,
             'attachment_links':attachment_links,
-            'crawl state':'full',
+            'crawl state':state,
+            'text length':length,
         }

@@ -24,12 +24,14 @@ class QinghaiSpider(scrapy.Spider):
         for li in response.css('li.clearfix'):
             url = li.css('p.tt a::attr(href)').get()
             UID = url.split('/')[-1][:-5]
-            detail_page_links.append(url)
+            if '?' not in UID:
+                detail_page_links.append(url)
             yield {
                 'UID': UID,
                 'title': li.css('p.tt a::attr(title)').get(),
                 'date': li.css('span::text').get(),
                 'FileNumber':li.css('p.num::text').get(),
+                'text length':0,
                 'url': url,
                 'crawl state':'half'
             }
@@ -37,19 +39,25 @@ class QinghaiSpider(scrapy.Spider):
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-5]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         doc_info_dict = {}
         for li in response.css('ul.clearfix li'):
             key = li.css("span")[0].css('::text').get()
             value = li.css("span")[1].css('::text').get()
             doc_info_dict[key] = value
         paragraph_list = response.css('div.view p *::text').getall()             
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'mainText': paragraph_list,
             'doc_info_dict':doc_info_dict,
-            'crawl state':'full',
+            'crawl state':state,
+            'text length':length,
         }

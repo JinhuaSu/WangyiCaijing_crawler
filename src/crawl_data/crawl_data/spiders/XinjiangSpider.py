@@ -24,12 +24,14 @@ class XinjiangSpider(scrapy.Spider):
         for dd in response.css('div.gknr_list dd'):
             url = response.urljoin(dd.css('a::attr(href)').get())
             UID = url.split('/')[-1][:-6]
-            detail_page_links.append(url)
+            if '?' not in UID:
+                detail_page_links.append(url)
             yield {
                 'UID': UID,
                 'title': dd.css('a::attr(title)').get(),
                 'date': dd.css('span::text').get(),
                 'FileNumber':None,
+                'text length':0,
                 'url': url,
                 'crawl state':'half'
             }
@@ -37,8 +39,6 @@ class XinjiangSpider(scrapy.Spider):
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-6]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         doc_info_dict = {}
         for li in response.css('ul.clearfix li'):
             tmp_l = li.css('*::text').getall()
@@ -52,12 +52,20 @@ class XinjiangSpider(scrapy.Spider):
         if '发文字号' in doc_info_dict.keys():
             File_num = doc_info_dict['发文字号']
         paragraph_list = response.css('div.gknbxq_detail p *::text').getall()        
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'FileNumber':File_num,
             'mainText': paragraph_list,
             'doc_info_dict':doc_info_dict,
-            'crawl state':'full',
+            'crawl state':state,
+            'text length':length,
         }

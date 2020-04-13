@@ -30,26 +30,38 @@ class GansuSpider(scrapy.Spider):
             table = Selector(text=table_text)
             url = 'http://www.gansu.gov.cn/'+table.css('a::attr(href)').get()
             detail_page_links.append(url)
-            UID = url.split('/')[-1][:-5]
+            if '?' not in UID:
+                UID = url.split('/')[-1][:-5]
             yield {
                 'UID': UID,
                 'title': table.css('a::attr(title)').get(),
                 'date': table.css('span::text').get(),
                 'url': url,
+                'text length':0,
                 'crawl state':'half'
             }
         yield from response.follow_all(detail_page_links, callback = self.parse_content)
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-5]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         paragraph_list = response.css('div#zoom p *::text').getall() 
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
+        filenum = None
+        if '号' in paragraph_list[0]:
+            filenum = paragraph_list[0]
         return {
             'UID': UID,
             'mainText': paragraph_list,
-            'FileNumber': paragraph_list[0],
-            'crawl state':'full',
+            'FileNumber': filenum,
+            'crawl state':state,
+            'text length':length,
         }

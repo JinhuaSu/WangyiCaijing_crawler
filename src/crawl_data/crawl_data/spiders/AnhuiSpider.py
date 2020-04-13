@@ -29,13 +29,20 @@ class AnhuiSpider(scrapy.Spider):
         for div in response.css('div.xxgk_navli'):
             url = div.css('a::attr(href)').get()
             UID = url.split('/')[-1][:-5]
-            detail_page_links.append(url)
+            date = div.css('span.date::text').get()
+            if date and len(date) > 1:
+                date = date.replace('\r','')
+                date = date.replace('\n','')
+                date = date.replace('\t','')
+            if '?' not in UID:
+                detail_page_links.append(url)
             yield {
                 'UID': UID,
                 'title': div.css('a::attr(title)').get(),
-                'date': div.css('span.date::text').get(),
+                'date': date,
                 'FileNumber':None,
                 'url': url,
+                'text length':0,
                 'crawl state':'half'
             }
         try:
@@ -45,8 +52,6 @@ class AnhuiSpider(scrapy.Spider):
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-5]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         doc_info_dict = {}
         td_list = response.css('tbody')[0].css('td')
         th_list = response.css('tbody')[0].css('th')
@@ -58,12 +63,24 @@ class AnhuiSpider(scrapy.Spider):
         if '文号：' in doc_info_dict.keys():
             File_num = doc_info_dict['文号：']
         paragraph_list =  response.css('div.wzcon p *::text').getall() 
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
-        return {
-            'UID': UID,
-            'FileNumber':File_num,
-            'mainText': paragraph_list,
-            'doc_info_dict':doc_info_dict,
-            'crawl state':'full',
-        }
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+            return {
+                'UID': UID,
+                'FileNumber':File_num,
+                'mainText': paragraph_list,
+                'doc_info_dict':doc_info_dict,
+                'crawl state':'full',
+                'text length':length,
+            }
+        else:
+            return {
+                'UID': UID,
+                'mainText': paragraph_list,
+                'crawl state':'empty',
+                'text length':0,
+            }

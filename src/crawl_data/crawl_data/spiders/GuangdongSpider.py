@@ -24,26 +24,34 @@ class GuangdongSpider(scrapy.Spider):
         for li in response.css('div.viewList ul li'):
             url = response.urljoin(li.css('a::attr(href)').get())
             UID = url.split('/')[-1][:-5]
-            detail_page_links.append(url)
+            if '?' not in UID:
+                detail_page_links.append(url)
             yield {
                 'UID': UID,
                 'title': li.css('a::text').get(),
                 'date': li.css('span.date::text').get(),
                 'FileNumber':li.css('span.wh::text').get(),
                 'url': url,
+                'text length':0,
                 'crawl state':'half'
             }
         yield from response.follow_all(detail_page_links, callback = self.parse_content)
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-5]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         paragraph_list = response.css('div.zw p *::text').getall() 
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'mainText': paragraph_list,
-            'crawl state':'full',
+            'crawl state':state,
+            'text length':length,
         }

@@ -31,12 +31,17 @@ class Shanxi_jinSpider(scrapy.Spider):
             url = hrefs[i]
             url = response.urljoin(url)
             UID = url.split('/')[-1][:-6]
-            detail_page_links.append(url)
+            if '?' not in UID:
+                detail_page_links.append(url)
+            date = dates[i]
+            if date and len(date) > 3:
+                date = date.replace('年','-').replace('月','-').replace('日','')
             yield {
                 'UID': UID,
                 'title': titles[i],
-                'date': dates[i],
+                'date': date,
                 'FileNumber': filenums[i],
+                'text length':0,
                 'url': url,
                 'crawl state':'half'
             }
@@ -44,8 +49,6 @@ class Shanxi_jinSpider(scrapy.Spider):
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-6]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         doc_info_dict = {}
         count = 0
         for td in response.css('table.affairs-detail-head td'):
@@ -57,13 +60,21 @@ class Shanxi_jinSpider(scrapy.Spider):
             count+=1
         paragraph_list = response.css('div[style="FONT-SIZE: 16px; LINE-HEIGHT: 160%"] *::text').getall()
         pdf_links = [response.urljoin(response.css('div.article-body a::attr(href)').getall()[-1])]
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'doc_info_dict': doc_info_dict,
             'mainText': paragraph_list,
             'attachment_links':pdf_links,
-            'crawl state':'full',
+            'crawl state':state,
+            'text length':length,
         }
 

@@ -24,31 +24,47 @@ class ShanghaiSpider(scrapy.Spider):
         for piece in response.css('ul.pageList li'):
             href = piece.css('a::attr(href)').get()
             UID = href.split('/')[-1][:-5]
-            detail_page_links.append(href)
+            if '?' not in UID:
+                detail_page_links.append(href)
+            date = piece.css('span::text').get()
+            if date and len(date) > 3:
+                date = date.replace('.','-')
             yield {
                 'UID': UID,
                 'title': piece.css('a::attr(title)').get(),
-                'date': piece.css('span::text').get(),
+                'date': date,
                 'href': href,
-                'crawl state':'half'
+                'text length':0,
+                'crawl state':'half',
+                'FileNumber':None,
             }
         yield from response.follow_all(detail_page_links, callback = self.parse_content)
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-5]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         doc_info_dict = {}
         doc_info_dict['relative_doc_titles'] = response.css('ul.nowrapli li a::attr(title)').getall()
         doc_info_dict['relative_doc_links'] = response.css('ul.nowrapli li a::attr(href)').getall()
         paragraph_list = response.css('div#ivs_content p::text').getall()
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        Filenum = None
+        if len(paragraph_list) > 0 and '号' in paragraph_list[0]:
+            Filenum = paragraph_list[0]
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'doc_info_dict': doc_info_dict,
             'url':response.url,
             'mainText': paragraph_list,
-            'crawl state':'full',
+            'FileNumber':Filenum,
+            'crawl state':state,
+            'text length':length,
         }
 

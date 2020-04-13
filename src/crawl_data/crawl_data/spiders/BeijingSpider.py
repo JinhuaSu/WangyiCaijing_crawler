@@ -23,12 +23,15 @@ class BeijingSpider(scrapy.Spider):
             url = response.urljoin(href)
             detail_page_links.append(href)
             UID = href.split('/')[-1][:-5]
+            if '?' not in UID:
+                detail_page_links.append(url)
             #response.follow(href, callbak = self.parse_content)
             yield {
                 'UID': UID,
                 'title': piece.css('a::text').get(),
                 'date': piece.css('span::text').get(),
                 'url': url,
+                'text length':0,
                 'FileNumber': None,
                 'crawl state':'half'
             }
@@ -38,8 +41,6 @@ class BeijingSpider(scrapy.Spider):
         UID = response.url.split('/')[-1][:-5]
         doc_info_dict = {}
         container = response.css('div.container')[0]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         for doc_info in container.css('ol li'):
             doc_info_l = doc_info.css('::text').getall()
             if len(doc_info_l) == 2:
@@ -51,14 +52,32 @@ class BeijingSpider(scrapy.Spider):
         full_tittle = container.css('div.header p::text').get()
         paragraph_list = container.css('div.mainTextBox p::text').getall()
         Filenum = doc_info_dict["[发文字号] "] if "[发文字号] " in doc_info_dict.keys() else paragraph_list[0]
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
-        return {
-            'UID': UID,
-            'full_tittle': full_tittle,
-            'FileNumber':Filenum,
-            'doc_info_dict': doc_info_dict,
-            'mainText': paragraph_list,
-            'crawl state': 'full',
-        }
+        if Filenum and '号' not in Filenum:
+            Filenum = None
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            return {
+                'UID': UID,
+                'full_tittle': full_tittle,
+                'FileNumber':Filenum,
+                'doc_info_dict': doc_info_dict,
+                'mainText': paragraph_list,
+                'text length':length,
+                'crawl state': 'full',
+            }
+        else:
+            return {
+                'UID': UID,
+                'full_tittle': full_tittle,
+                'FileNumber':Filenum,
+                'doc_info_dict': doc_info_dict,
+                'mainText': paragraph_list,
+                'text length':length,
+                'crawl state': 'empty',
+            }
+            
 

@@ -36,6 +36,7 @@ class HenanSpider(scrapy.Spider):
                 'FileNumber':file_num,
                 'url': url,
                 'crawl state':'full',
+                'text length': 0,
                 'mainText':[url]
             }
 

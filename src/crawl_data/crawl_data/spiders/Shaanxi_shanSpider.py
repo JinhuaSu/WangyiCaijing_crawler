@@ -32,13 +32,15 @@ class Shaanxi_shanSpider(scrapy.Spider):
             else:
                 UID = UID[:-4]
                 type_ = 'htm'
-            detail_page_links.append(url)
+            if '?' not in UID:
+                detail_page_links.append(url)
             yield {
                 'UID': UID,
                 'type':type_,
                 'title': tr.css('a::attr(title)').get(),
                 'date': tr.css('td[align="center"]::text').get(),
                 'FileNumber': tr.css('td.textCenter::text').get(),
+                'text length':0,
                 'url': url,
                 'crawl state':'half'
             }
@@ -50,8 +52,6 @@ class Shaanxi_shanSpider(scrapy.Spider):
             UID =  UID.split('=')[-1]
         else:
             UID = UID[:-4]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         doc_info_dict = {}
         count = 0
         td_list = response.css('div.zfwj_news_table tr td')
@@ -67,13 +67,21 @@ class Shaanxi_shanSpider(scrapy.Spider):
         paragraph_list = response.css('div#info_content p *::text').getall()
         attach = response.css('div.xzfwj_rig a[href$=".pdf"]::attr(href)').get()
         attach = response.urljoin(attach)
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'doc_info_dict': doc_info_dict,
             'mainText': paragraph_list,
             'attachment_links': attach,
-            'crawl state':'full',
+            'crawl state':state,
+            'text length':length,
         }
 

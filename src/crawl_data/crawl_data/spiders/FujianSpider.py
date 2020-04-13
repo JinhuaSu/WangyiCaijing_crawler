@@ -29,31 +29,41 @@ class FujianSpider(scrapy.Spider):
             url = piece_dict['url']
             UID = url.split('/')[-1][:-4]
             title = piece_dict['title']
-            detail_page_links.append(url)
+            if '?' not in UID:
+                detail_page_links.append(url)
             if 'fileno' in piece_dict.keys():
                 file_num = piece_dict['fileno']
             else:
                 break
             date = piece_dict['time']
+            if date and len(date) > 10:
+                date = date[:10]
             yield {
                 'UID':UID,
                 'title':title,
                 'url':url,
                 'date':date,
                 'FileNumber':file_num,
+                'text length':0,
                 'crawl state': 'half'
             }
         yield from response.follow_all(detail_page_links, callback = self.parse_content)
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-4]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         paragraph_list = response.css('div.xl-bk p *::text').getall() 
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'mainText': paragraph_list,
-            'crawl state':'full',
+            'crawl state':state,
+            'text length':length,
         }

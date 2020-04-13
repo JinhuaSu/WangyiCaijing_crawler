@@ -39,28 +39,40 @@ class ChongqingSpider(scrapy.Spider):
                 'release_date': release_date_l[i],
                 'release_inst': release_inst_l[i],
                 'href': href,
-                'crawl state':'half'
+                'crawl state':'half',
+                'text length':0,
+                'FileNumber':None
             }
         yield from response.follow_all(detail_page_links, callback = self.parse_content)
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-5]
-        with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
-            pickle.dump(response.text,f)
         doc_info_dict = {}
         td_list = response.css('table.gkxl-top td')
         for i in range(len(td_list)//2):
             key = td_list[2*i].css('::text').get()
             value = td_list[2*i+1].css('::text').get()
             doc_info_dict[key] = value
+        FileNum =None
+        if '文 号：' in doc_info_dict.keys():
+            FileNum = doc_info_dict['文 号：']
         paragraph_list = response.css('div.gkxl-article p *::text').getall()
-        with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
-            f.write('\n'.join(paragraph_list))
+        length = len(''.join(paragraph_list))
+        if length > 0:
+            state = 'full'
+            with open('../../data/text/%s/%s.txt' % (self.name,UID), 'w') as f:
+                f.write('\n'.join(paragraph_list))
+            with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
+                pickle.dump(response.text,f)
+        else:
+            state = 'empty'
         return {
             'UID': UID,
             'doc_info_dict': doc_info_dict,
             'mainText': paragraph_list,
             'url':response.url,
-            'crawl state':'full',
+            'crawl state':state,
+            'text length':length,
+            'FileNumber':FileNum,
         }
 
