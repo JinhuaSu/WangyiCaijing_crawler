@@ -38,7 +38,7 @@ class ChongqingSpider(scrapy.Spider):
                 'date': date_l[i],
                 'release_date': release_date_l[i],
                 'release_inst': release_inst_l[i],
-                'href': href,
+                'url': response.urljoin(href),
                 'crawl state':'half',
                 'text length':0,
                 'FileNumber':None
