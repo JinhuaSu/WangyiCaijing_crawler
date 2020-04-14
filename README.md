@@ -1,5 +1,27 @@
 # Policy_crawler
-爬取34个省份的公文数据。
+
+爬取中国34个省份办公厅的公文数据。
+开发与运行系统:ubuntu18
+
+
+技术栈:
+
+- python3
+- mongodb默认配置
+- scrapy2.0
+- pymongo
+
+项目于2020年4月14日结束，只要网站html结构不变的情况下可以爬取至运行日期，如果网站结果变换，欢迎开源爱好者fork进行修改并提交merge master申请。
+
+## quick start
+
+```
+git clone https://github.com/JinhuaSu/Policy_crawler.git
+cd src/crawl_data
+bash crawl_all.sh
+```
+
+## project log
 
 **add splash**
 
