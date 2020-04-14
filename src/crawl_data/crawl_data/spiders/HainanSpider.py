@@ -50,6 +50,7 @@ class HainanSpider(scrapy.Spider):
                 f.write('\n'.join(paragraph_list))
             with open('../../data/HTML_pk/%s/%s.pkl' % (self.name,UID), 'wb') as f:
                 pickle.dump(response.text,f)
+            state = 'full'
         else:
             state = 'empty'
         return {

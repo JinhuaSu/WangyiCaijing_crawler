@@ -41,10 +41,13 @@ class PolicyMongoPipeline(object):
         empty_list = []
         for raw_dict in table.find():
             #data_list.append({key:value for key,value in  raw_dict.items() if key in ['UID','title','date','url']})
-            if raw_dict['crawl state'] == 'full':
-                data_list.append({key:raw_dict[key] for key in ['UID','title','date','url','FileNumber','crawl state','text length']})
-            else:
-                empty_list.append({key:raw_dict[key] for key in ['UID','title','date','url','FileNumber','crawl state','text length']})
+            try:
+                if raw_dict['crawl state'] == 'full':
+                    data_list.append({key:raw_dict[key] for key in ['UID','title','date','url','FileNumber','crawl state','text length']})
+                else:
+                    empty_list.append({key:raw_dict[key] for key in ['UID','title','date','url','FileNumber','crawl state','text length']})
+            except:
+                print(raw_dict)
         df = pd.DataFrame(data_list)
         print(df)
         df.to_csv('../../data/csv/%s_news_list.csv' % spider.name,encoding='utf-8')
