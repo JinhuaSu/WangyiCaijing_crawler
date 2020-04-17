@@ -19,20 +19,22 @@ class JiangsuSpider(scrapy.Spider):
             "Origin":"http://www.jiangsu.gov.cn"
         }
 
-        total_page = 190
-        # total_page = 2
+        total_page = 63
+        # total_page = 8
         # url_base = "http://www.jiangsu.gov.cn/module/web/jpage/dataproxy.jsp?col=1&appid=1&webid=1&path=%2F&columnid=76841&sourceContentType=1&unitid=297589&webname=%E6%B1%9F%E8%8B%8F%E7%9C%81%E4%BA%BA%E6%B0%91%E6%94%BF%E5%BA%9C&permissiontype=0"
-        url_base = 'http://www.jiangsu.gov.cn/col/col76841/index.html?uid=297589&pageNum={0}&col=1&appid=1&webid=1&path=%2F&columnid=76841&sourceContentType=1&unitid=297589&webname=%E6%B1%9F%E8%8B%8F%E7%9C%81%E4%BA%BA%E6%B0%91%E6%94%BF%E5%BA%9C&permissiontype=0'
+        # url_base = 'http://www.jiangsu.gov.cn/col/col76841/index.html?uid=297589&pageNum={0}&col=1&appid=1&webid=1&path=%2F&columnid=76841&sourceContentType=1&unitid=297589&webname=%E6%B1%9F%E8%8B%8F%E7%9C%81%E4%BA%BA%E6%B0%91%E6%94%BF%E5%BA%9C&permissiontype=0'
+        url_base = 'http://www.jiangsu.gov.cn/col/col76841/index.html?uid=297589&pageNum={0}&col=1&appid=1&webid=1&path=%2F&columnid=76841&sourceContentType=1&unitid=297589&webname=%C3%83%C2%A6%C3%82%C2%B1%C3%82%C2%9F%C3%83%C2%A8%C3%82%C2%8B%C3%82%C2%8F%C3%83%C2%A7%C3%82%C2%9C%C3%82%C2%81%C3%83%C2%A4%C3%82%C2%BA%C3%82%C2%BA%C3%83%C2%A6%C3%82%C2%B0%C3%82%C2%91%C3%83%C2%A6%C3%82%C2%94%C3%82%C2%BF%C3%83%C2%A5%C3%82%C2%BA%C3%82%C2%9C&permissiontype=0'
+        url_base = 'http://www.jiangsu.gov.cn/module/web/jpage/dataproxy.jsp?startrecord={0}&endrecord={0}&perpage=25&col=1&appid=1&webid=1&path=%2F&columnid=76841&sourceContentType=1&unitid=297589&webname=%E6%B1%9F%E8%8B%8F%E7%9C%81%E4%BA%BA%E6%B0%91%E6%94%BF%E5%BA%9C&permissiontype=0'
         for i in range(total_page):
-            yield scrapy.Request(url=url_base.format(i+1),headers=headers, callback=self.parse)
+            yield scrapy.Request(url=url_base.format(i*75+1,i*75+75),headers=headers, callback=self.parse)
 
     def parse(self,response):
         detail_page_links = []
-        for record in Selector(text = response.css('div#297589 *::text').get()).css('record'):
+        for html_text in response.css('record *::text').getall():
+            record = Selector(text = html_text)
             url = record.css('a::attr(href)').get()
-            if '?' not in UID:
-                detail_page_links.append(url)
-            UID = url.split('/')[-1][:-5]
+            UID = url.split('/')[-1][:-5]+'_'+url.split('/')[-4]+url.split('/')[-3]+url.split('/')[-2]
+            detail_page_links.append(url)
             yield {
                 'UID': UID,
                 'title': record.css('a::attr(title)').get(),
@@ -45,7 +47,8 @@ class JiangsuSpider(scrapy.Spider):
         yield from response.follow_all(detail_page_links, callback = self.parse_content)
 
     def parse_content(self, response):
-        UID = response.url.split('/')[-1][:-5]
+        url = response.url
+        UID = url.split('/')[-1][:-5]+'_'+url.split('/')[-4]+url.split('/')[-3]+url.split('/')[-2]
         doc_info_dict = {}
         count = 0
         for td in response.css('tbody td'):
