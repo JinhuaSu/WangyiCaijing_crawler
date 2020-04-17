@@ -14,7 +14,7 @@ class Shandong_leftSpider(scrapy.Spider):
         os.makedirs('../../data/text/%s' % name)
     def start_requests(self):
         detail_page_links = []
-        df = pd.read_csv('../../data/Shandong_empty_list.csv')     
+        df = pd.read_csv('../../data/empty/Shandong_empty_list.csv')     
         
         for i in range(len(df)):
             UID = df.loc[i,'UID']
