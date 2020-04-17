@@ -30,9 +30,8 @@ class JiangsuSpider(scrapy.Spider):
         detail_page_links = []
         for record in Selector(text = response.css('div#297589 *::text').get()).css('record'):
             url = record.css('a::attr(href)').get()
-            if '?' not in UID:
-                detail_page_links.append(url)
             UID = url.split('/')[-1][:-5]
+            detail_page_links.append(url)
             yield {
                 'UID': UID,
                 'title': record.css('a::attr(title)').get(),
@@ -42,7 +41,8 @@ class JiangsuSpider(scrapy.Spider):
                 'url': url,
                 'crawl state':'half'
             }
-        yield from response.follow_all(detail_page_links, callback = self.parse_content)
+        for url in detail_page_links:
+            yield scrapy.Request(url=url, callback = self.parse_content)
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-5]

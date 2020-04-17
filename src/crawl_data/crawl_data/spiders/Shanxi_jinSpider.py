@@ -61,6 +61,8 @@ class Shanxi_jinSpider(scrapy.Spider):
         paragraph_list = response.css('div[style="FONT-SIZE: 16px; LINE-HEIGHT: 160%"] *::text').getall()
         if len(paragraph_list) == 0:
             paragraph_list =  response.css('div *::text').getall() 
+        if len(paragraph_list) == 0:
+            paragraph_list =  response.css('*::text').getall() 
         pdf_links = [response.urljoin(response.css('div.article-body a::attr(href)').getall()[-1])]
         length = len(''.join(paragraph_list))
         if length > 0:

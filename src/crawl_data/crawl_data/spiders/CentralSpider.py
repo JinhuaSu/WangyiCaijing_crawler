@@ -11,7 +11,7 @@ class CentralSpider(scrapy.Spider):
         os.makedirs('../../data/text/%s' % name)
     def start_requests(self):
         total_page = 2466
-        total_page = 3 
+#         total_page = 3 
         url_base = 'http://sousuo.gov.cn/data?t=zhengcelibrary&q=&timetype=timeqb&mintime=&maxtime=&sort=pubtime&sortType=1&searchfield=title&pcodeJiguan=&childtype=&subchildtype=&tsbq=&pubtimeyear=&puborg=&pcodeYear=&pcodeNum=&filetype=&p={0}&n=5&inpro=&bmfl=&dup=&orpro='
         for i in range(total_page):
             yield scrapy.Request(url=url_base.format(i), callback=self.parse)
