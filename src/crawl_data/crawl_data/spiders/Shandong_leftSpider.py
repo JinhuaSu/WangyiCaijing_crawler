@@ -13,9 +13,11 @@ class Shandong_leftSpider(scrapy.Spider):
     if not os.path.exists('../../data/text/%s' % name):
         os.makedirs('../../data/text/%s' % name)
     def start_requests(self):
+        return scrapy.Request('http://www.shandong.gov.cn',callback=self.parse)
+
+    def parse(self,response):
         detail_page_links = []
         df = pd.read_csv('../../data/empty/Shandong_empty_list.csv')     
-        
         for i in range(len(df)):
             UID = df.loc[i,'UID']
             if '?' not in UID:
@@ -32,8 +34,7 @@ class Shandong_leftSpider(scrapy.Spider):
                         'url': url,
                         'crawl state':'half'
                     }
-        for url in detail_page_links:
-            yield scrapy.Request(url, callback = self.parse_content)
+        yield from response.follow_all(detail_page_links, callback = self.parse_content)
 
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-16]
