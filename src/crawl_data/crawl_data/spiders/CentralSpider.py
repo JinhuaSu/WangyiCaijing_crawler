@@ -3,15 +3,26 @@ import pickle
 import os
 import json
 
+# from selenium import webdriver
+# from selenium.webdriver.firefox.options import Options
+# options = Options()
+# options.headless = True
+
 class CentralSpider(scrapy.Spider):
     name = "Central"
     if not os.path.exists('../../data/HTML_pk/%s' % name):
         os.makedirs('../../data/HTML_pk/%s' % name)
     if not os.path.exists('../../data/text/%s' % name):
         os.makedirs('../../data/text/%s' % name)
+    # def __init__(self):
+    #     self.browser = webdriver.Firefox(options=options)
+    #     self.browser.get('http://sousuo.gov.cn')
+    #     super().__init__()
+    # def close(self,spider):
+    #     self.browser.quit()
     def start_requests(self):
         total_page = 2466
-#         total_page = 3 
+        # total_page = 3
         url_base = 'http://sousuo.gov.cn/data?t=zhengcelibrary&q=&timetype=timeqb&mintime=&maxtime=&sort=pubtime&sortType=1&searchfield=title&pcodeJiguan=&childtype=&subchildtype=&tsbq=&pubtimeyear=&puborg=&pcodeYear=&pcodeNum=&filetype=&p={0}&n=5&inpro=&bmfl=&dup=&orpro='
         for i in range(total_page):
             yield scrapy.Request(url=url_base.format(i), callback=self.parse)

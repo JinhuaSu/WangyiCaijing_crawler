@@ -1,5 +1,7 @@
 # Policy_crawler
 
+**声明:爬取内容皆为政府对外公示文件，使用用途为学术研究。**
+
 爬取中国34个省份办公厅的公文数据。
 开发与运行系统:ubuntu18
 
@@ -20,6 +22,10 @@ git clone https://github.com/JinhuaSu/Policy_crawler.git
 cd src/crawl_data
 bash crawl_all.sh
 ```
+
+运行结束后，存在爬取速度过快导致fail的省份，这时考虑配置selenium,middlewares已经配置示例，根据需要修改settings,然后重新爬取各省份即可。
+
+**上述爬取中湖北和中央运行了反爬，需要使用selenium的firefox来处理**
 
 ## project log
 
@@ -1117,3 +1123,70 @@ In [6]: response.css('table.table tr td.th')[2].css('::text').get()
 Out[6]: '文 \xa0\xa0\xa0\xa0 号'
 
 response.css('div.view *::text').getall()
+
+**Hubei**
+
+'http://www.hubei.gov.cn/zfwj/szfl/index{0}.shtml':10,
+'http://www.hubei.gov.cn/zfwj/ezf/index{0}.shtml':47,
+'http://www.hubei.gov.cn/zfwj/ezh/index{0}.shtml':12,
+'http://www.hubei.gov.cn/zfwj/ezd/index{0}.shtml':1,
+'http://www.hubei.gov.cn/zfwj/ezbf/index{0}.shtml':50,
+'http://www.hubei.gov.cn/zfwj/qt/index{0}.shtml':8,
+
+
+
+
+headers = {'Host': 'www.hubei.gov.cn',
+ 'Connection': 'keep-alive',
+ 'Cache-Control': 'max-age=0',
+ 'Upgrade-Insecure-Requests': '1',
+ 'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36',
+ 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
+ 'Referer': 'http://www.hubei.gov.cn/zfwj/szfl/index_9.shtml',
+ 'Accept-Encoding': 'gzip, deflate',
+ 'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+ 'Cookie': 'Secure; FSSBBIl1UgzbN7N80S=clrf2UHoMt0DgPB491MS_YjGoovnKcoQJhmG88s2jyYqsL9c9x9qTtP6v7_qEVl3; Secure; _trs_uv=k92le385_3027_hlrs; _trs_ua_s_1=k92le385_3027_g0u; Hm_lvt_5544783ae3e1427d6972d9e77268f25d=1585408324,1587031185; dataHide2=f5865260-69d2-47c3-9602-d7faa6439fd6; Hm_lpvt_5544783ae3e1427d6972d9e77268f25d=1587031406; FSSBBIl1UgzbN7N80T=4fBWMV9h77mTovzwH6v3_FSV9vJPTUAMh8ObnRg58Zzxtuj_jxTp7BzdYLTLyBB0VkD0012ZcWolmQ61kViLgcVX65p5b1yq0FbgEHD.ciKU.AByM6dwAWQOYRRM83XnsgznLMyTk9uBq1RCs8ma_DIEFJsuwxqzx4wgfsvm2lj0BtmH5blks.N.dS7kvimGc4H30I8QfCE3sLxGw1b4UtL8XtQzKOMRMsBacs5H96Mw6fE_SHbK0ZCQW08afTvNUEyx.AC3TNr8V11XdL2yVlUA3mOtEPmcXKL6zjzJllsD5.7O5P_QTp1EbxZBzGknhCwQyn3urEoD_nMN_LgIiLsK.0Agwoo3AlHtd3dImJeq8_0imj1N6E0ICxqnqy4b5M5aAwCT3NqjHZD1eWhqbxydr'}
+
+Cookies =  {'FSSBBIl1UgzbN7N80S': 'clrf2UHoMt0DgPB491MS_YjGoovnKcoQJhmG88s2jyYqsL9c9x9qTtP6v7_qEVl3',
+ '_trs_uv': 'k92le385_3027_hlrs',
+ '_trs_ua_s_1': 'k92le385_3027_g0u',
+ 'Hm_lvt_5544783ae3e1427d6972d9e77268f25d': '1585408324,1587031185',
+ 'dataHide2': 'f5865260-69d2-47c3-9602-d7faa6439fd6',
+ 'Hm_lpvt_5544783ae3e1427d6972d9e77268f25d': '1587031406',
+ 'FSSBBIl1UgzbN7N80T': '4fBWMV9h77mTovzwH6v3_FSV9vJPTUAMh8ObnRg58Zzxtuj_jxTp7BzdYLTLyBB0VkD0012ZcWolmQ61kViLgcVX65p5b1yq0FbgEHD.ciKU.AByM6dwAWQOYRRM83XnsgznLMyTk9uBq1RCs8ma_DIEFJsuwxqzx4wgfsvm2lj0BtmH5blks.N.dS7kvimGc4H30I8QfCE3sLxGw1b4UtL8XtQzKOMRMsBacs5H96Mw6fE_SHbK0ZCQW08afTvNUEyx.AC3TNr8V11XdL2yVlUA3mOtEPmcXKL6zjzJllsD5.7O5P_QTp1EbxZBzGknhCwQyn3urEoD_nMN_LgIiLsK.0Agwoo3AlHtd3dImJeq8_0imj1N6E0ICxqnqy4b5M5aAwCT3NqjHZD1eWhqbxydr'}
+
+ 打开driver必须get一下主页保证有referer
+
+ In [16]: res.css('div.list_block li')[0].css('a::attr(href)').get()                                                     
+Out[16]: './202001/t20200118_2006205.shtml'
+
+In [17]: res.css('div.list_block li')[0].css('a::attr(title)').get()                                                    
+Out[17]: '湖北省人民防空工程管理规定'
+
+In [18]: res.css('div.list_block li')[0].css('span::text').get()         
+
+
+Out[18]: '2020-01-18 11:34'
+
+
+In [24]: res.css('div.metadata_content div.col-xs-12')[0].css('::text').getall()                                        
+Out[24]: 
+['\n\t\t                   ',
+ '索 引 号：',
+ '011043102/2020-37348\n\t\t                ']
+
+In [25]: res.css('div.metadata_content div.col-xs-12')[0].css('::text').get()                                           
+Out[25]: '\n\t\t                   '
+
+In [26]: res.css('div.metadata_content div.col-xs-12')[0].css('::text').getall()                                        
+Out[26]: 
+['\n\t\t                   ',
+ '索 引 号：',
+ '011043102/2020-37348\n\t\t                ']
+
+In [27]: res.css('div.metadata_content div.col-xs-12')[-1].css('::text').getall()                                       
+Out[27]: ['\n\t\t                  ', '发布日期：', '2020年01月18日\n\t\t             ']
+
+'文    号：'
+
+res.css('div.content_block *::text').getall()      

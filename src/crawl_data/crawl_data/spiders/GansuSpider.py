@@ -30,8 +30,7 @@ class GansuSpider(scrapy.Spider):
             table = Selector(text=table_text)
             url = 'http://www.gansu.gov.cn/'+table.css('a::attr(href)').get()
             UID = url.split('/')[-1][:-5]
-            if '?' not in UID:
-                detail_page_links.append(url)
+            detail_page_links.append(url)
             yield {
                 'UID': UID,
                 'title': table.css('a::attr(title)').get(),
