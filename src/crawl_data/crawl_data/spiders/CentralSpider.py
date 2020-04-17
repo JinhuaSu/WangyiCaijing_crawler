@@ -7,6 +7,30 @@ import json
 # from selenium.webdriver.firefox.options import Options
 # options = Options()
 # options.headless = True
+import random
+
+def get_proxy():
+    s = """58.218.92.78:5534
+58.218.92.69:7747
+58.218.92.75:7476
+58.218.92.75:4365
+58.218.92.75:2827
+58.218.92.75:6485
+58.218.92.72:2116
+58.218.92.73:9468
+58.218.92.75:6387
+58.218.92.78:5215
+58.218.92.78:9543
+58.218.92.72:5049
+58.218.92.69:8833
+58.218.92.73:6617
+58.218.92.73:7820
+58.218.92.73:7205
+58.218.92.73:9438
+58.218.92.75:7360
+58.218.92.78:8745"""
+    ip_list = ['http://'+ ip for ip in s.split('\n')]
+    return random.choice(ip_list)
 
 class CentralSpider(scrapy.Spider):
     name = "Central"
@@ -23,9 +47,12 @@ class CentralSpider(scrapy.Spider):
     def start_requests(self):
         total_page = 2466
         # total_page = 3
+        total_page =  50
         url_base = 'http://sousuo.gov.cn/data?t=zhengcelibrary&q=&timetype=timeqb&mintime=&maxtime=&sort=pubtime&sortType=1&searchfield=title&pcodeJiguan=&childtype=&subchildtype=&tsbq=&pubtimeyear=&puborg=&pcodeYear=&pcodeNum=&filetype=&p={0}&n=5&inpro=&bmfl=&dup=&orpro='
         for i in range(total_page):
-            yield scrapy.Request(url=url_base.format(i), callback=self.parse)
+            req = scrapy.Request(url=url_base.format(i), callback=self.parse)
+            req.meta['proxy'] = get_proxy()
+            yield req
 
     def parse(self,response):
         detail_page_links = []
