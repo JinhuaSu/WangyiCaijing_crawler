@@ -183,11 +183,12 @@ class SeleniumDownloaderMiddleware(object):
 
     # 请求出错了的操作, 比如ip被封了,可以在这里设置ip代理
     def process_exception(self, request, exception, spider):
-        print("添加代理开始")
-        ret_proxy = get_proxy()
-        request.meta["proxy"] = ret_proxy
-        print("为%s添加代理%s" %(request.url,ret_proxy), end="")
-        return request
+#         print("添加代理开始")
+#         ret_proxy = get_proxy()
+#         request.meta["proxy"] = ret_proxy
+#         print("为%s添加代理%s" %(request.url,ret_proxy), end="")
+#         return request
+        return None
 
 def get_proxy():
     s = """58.218.92.78:5534

@@ -13,13 +13,13 @@ class Shandong_leftSpider(scrapy.Spider):
     if not os.path.exists('../../data/text/%s' % name):
         os.makedirs('../../data/text/%s' % name)
     def start_requests(self):
-        return scrapy.Request('http://www.shandong.gov.cn',callback=self.parse)
+        yield scrapy.Request('http://www.shandong.gov.cn',callback=self.parse)
 
     def parse(self,response):
         detail_page_links = []
         df = pd.read_csv('../../data/empty/Shandong_empty_list.csv')     
         for i in range(len(df)):
-            UID = df.loc[i,'UID']
+            UID = str(df.loc[i,'UID'])
             if '?' not in UID:
                 title = df.loc[i,'title']
                 date = df.loc[i,'date']
@@ -44,6 +44,8 @@ class Shandong_leftSpider(scrapy.Spider):
             paragraph_list = response.css('div#zoom p *::text').getall()
         if len(paragraph_list) == 0:
             paragraph_list = response.css('p *::text').getall()
+        if len(paragraph_list) == 0:
+            paragraph_list = response.css('*::text').getall()
         if len(response.css('div.wip_art_con p')) >= 2:
             File_num = response.css('div.wip_art_con p')[1].css('::text').get()
         else:
