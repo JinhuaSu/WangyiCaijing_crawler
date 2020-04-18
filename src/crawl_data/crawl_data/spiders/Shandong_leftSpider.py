@@ -13,7 +13,7 @@ class Shandong_leftSpider(scrapy.Spider):
     if not os.path.exists('../../data/text/%s' % name):
         os.makedirs('../../data/text/%s' % name)
     def start_requests(self):
-        return scrapy.Request('http://www.shandong.gov.cn',callback=self.parse)
+        yield scrapy.Request('http://www.shandong.gov.cn',callback=self.parse)
 
     def parse(self,response):
         detail_page_links = []

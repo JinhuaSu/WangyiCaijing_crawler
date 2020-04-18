@@ -168,7 +168,7 @@ class SeleniumDownloaderMiddleware(object):
         """
 
         #  对页面响应体数据的篡改, 如果是每个模块的 url 请求, 则处理完数据并进行封装
-        if spider.name in ["Hubei"]:
+        if spider.name in ["Hubei",'Tianjin']:
             spider.browser.get(url=request.url)
             # more_btn = spider.browser.find_element_by_class_name("post_addmore")     # 更多按钮
             # print(more_btn)
@@ -183,11 +183,12 @@ class SeleniumDownloaderMiddleware(object):
 
     # 请求出错了的操作, 比如ip被封了,可以在这里设置ip代理
     def process_exception(self, request, exception, spider):
-        print("添加代理开始")
-        ret_proxy = get_proxy()
-        request.meta["proxy"] = ret_proxy
-        print("为%s添加代理%s" %(request.url,ret_proxy), end="")
-        return request
+        # print("添加代理开始")
+        # ret_proxy = get_proxy()
+        # request.meta["proxy"] = ret_proxy
+        # print("为%s添加代理%s" %(request.url,ret_proxy), end="")
+        # return request
+        return None
 
 def get_proxy():
     s = """58.218.92.78:5534

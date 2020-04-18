@@ -1,6 +1,10 @@
 import scrapy
 import pickle
 import os
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+options = Options()
+options.headless = True
 
 class TianjinSpider(scrapy.Spider):
     name = "Tianjin"
@@ -8,9 +12,18 @@ class TianjinSpider(scrapy.Spider):
         os.makedirs('../../data/HTML_pk/%s' % name)
     if not os.path.exists('../../data/text/%s' % name):
         os.makedirs('../../data/text/%s' % name)
+        
+    def __init__(self):
+        self.browser = webdriver.Firefox(options=options)
+        self.browser.get('http://gk.tj.gov.cn/')
+        super().__init__()
+        
+    def close(self,spider):
+        self.browser.quit()
+
     def start_requests(self):
         total_page = 7516
-        #total_page = 3
+        # total_page = 10
         url_base = 'http://gk.tj.gov.cn/govsearch/search.jsp?SType=1&page={0}'
         for i in range(total_page):
             yield scrapy.Request(url=url_base.format(str(i+1)), callback=self.parse)
@@ -53,6 +66,7 @@ class TianjinSpider(scrapy.Spider):
         if "文　　号：" in doc_info_dict.keys():
             FileNumber = doc_info_dict["文　　号："]
         paragraph_list = response.css('div.TRS_PreAppend p *::text').getall()
+        attchment_list = response.css('div.article_content a::attr(href)').getall()
         if len(paragraph_list) == 0:
             paragraph_list =  response.css('p *::text').getall() 
         length = len(''.join(paragraph_list))
@@ -68,6 +82,7 @@ class TianjinSpider(scrapy.Spider):
             'UID': UID,
             'doc_info_dict': doc_info_dict,
             'mainText': paragraph_list,
+            'attachment_link': attchment_list,
             'url':response.url,
             'FileNumber' :FileNumber,
             'crawl state':state,
