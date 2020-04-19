@@ -40,6 +40,7 @@ class HainanSpider(scrapy.Spider):
     def parse_content(self, response):
         UID = response.url.split('/')[-1][:-6]
         paragraph_list = response.css('div#zoom p *::text').getall()         
+        attachment_link = response.css('div#zoom p a::attr(href)').getall()         
         if len(paragraph_list) == 0:
             paragraph_list = response.css('table p *::text').getall()
         if len(paragraph_list) == 0:
@@ -56,6 +57,7 @@ class HainanSpider(scrapy.Spider):
         return {
             'UID': UID,
             'mainText': paragraph_list,
+            'attachment_link': attachment_link,
             'crawl state':state,
             'text length':length,
         }

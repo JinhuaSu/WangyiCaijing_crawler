@@ -53,6 +53,7 @@ class NeimengguSpider(scrapy.Spider):
             count+=1
         filenum = doc_info_dict['文\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0号'] if '文\xa0\xa0\xa0\xa0\xa0\xa0\xa0\xa0号' in doc_info_dict.keys() else ''
         paragraph_list = response.css('div#zoom p *::text').getall()
+        attachment_link = response.css('div#zoom p a::attr(href)').getall()
         if len(paragraph_list) == 0:
             paragraph_list =  response.css('p *::text').getall() 
         length = len(''.join(paragraph_list))
@@ -69,6 +70,7 @@ class NeimengguSpider(scrapy.Spider):
             'doc_info_dict': doc_info_dict,
             'FileNumber':filenum,
             'mainText': paragraph_list,
+            'attachment_link': attachment_link,
             'crawl state':state,
             'text length':length,
         }

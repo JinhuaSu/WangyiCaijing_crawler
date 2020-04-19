@@ -52,6 +52,7 @@ class XinjiangSpider(scrapy.Spider):
         if '发文字号' in doc_info_dict.keys():
             File_num = doc_info_dict['发文字号']
         paragraph_list = response.css('div.gknbxq_detail p *::text').getall()        
+        attachment_link = response.css('div.ewebeditor_doc img::attr(src)').getall()        
         if len(paragraph_list) == 0:
             paragraph_list =  response.css('p *::text').getall() 
         length = len(''.join(paragraph_list))
@@ -67,6 +68,7 @@ class XinjiangSpider(scrapy.Spider):
             'UID': UID,
             'FileNumber':File_num,
             'mainText': paragraph_list,
+            'attachment_link': attachment_link,
             'doc_info_dict':doc_info_dict,
             'crawl state':state,
             'text length':length,

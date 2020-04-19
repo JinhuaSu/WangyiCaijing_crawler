@@ -42,10 +42,13 @@ class ShandongSpider(scrapy.Spider):
         UID = response.url.split('/')[-1][:-16]
 
         paragraph_list = response.css('div.wip_art_con p *::text').getall()
+        attachment_link = response.css('div.wip_art_con p a::attr(href)').getall()
         if len(paragraph_list) == 0:
             paragraph_list = response.css('div#zoom p *::text').getall()
+            attachment_link = response.css('div#zoom p a::attr(href)').getall()
         if len(paragraph_list) == 0:
             paragraph_list = response.css('p *::text').getall()
+            attachment_link = []
         if len(response.css('div.wip_art_con p')) >= 2:
             File_num = response.css('div.wip_art_con p')[1].css('::text').get()
         else:
@@ -65,6 +68,7 @@ class ShandongSpider(scrapy.Spider):
             'UID': UID,
             'FileNumber':File_num,
             'mainText': paragraph_list,
+            'attachment_link': attachment_link,
             'crawl state':state,
             'text length':length,
         }

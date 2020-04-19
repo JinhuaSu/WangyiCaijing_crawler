@@ -13,7 +13,7 @@ class HunanSpider(scrapy.Spider):
             'http://www.hunan.gov.cn/hnszf/xxgk/wjk/szfwj/wjk_glrb{0}.html':34,
             'http://www.hunan.gov.cn/hnszf/xxgk/wjk/szfbgt/wjk_glrb{0}.html':34,
         }
-        test_page = 2
+        # test_page = 2
         for url_base, max_page in url_dict.items():
             for i in range(max_page):
                 page = '_' + str(i+1) if i>0 else ''

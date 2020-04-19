@@ -52,6 +52,7 @@ class HebeiSpider(scrapy.Spider):
                 doc_info_dict[key] = value
             count+=1
         paragraph_list = response.css('div#zoom div *::text').getall()
+        attachment_link = response.css('div#zoom div a::attr(href)').getall()
         if len(paragraph_list) == 0:
             paragraph_list =  response.css('div *::text').getall() 
         length = len(''.join(paragraph_list))
@@ -67,6 +68,7 @@ class HebeiSpider(scrapy.Spider):
             'UID': UID,
             'doc_info_dict': doc_info_dict,
             'mainText': paragraph_list,
+            'attachment_link': attachment_link,
             'crawl state':state,
             'text length':length,
         }

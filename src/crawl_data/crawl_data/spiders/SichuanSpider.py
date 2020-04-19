@@ -42,6 +42,7 @@ class SichuanSpider(scrapy.Spider):
     def parse_content(self, response):
         UID = response.url.split('=')[-1]
         paragraph_list = response.css('td p *::text').getall()
+        paragraph_list = response.css('td[valign="top"]')[0].css('a::attr(href)').getall()
         if len(paragraph_list) == 0:
             paragraph_list =  response.css('p *::text').getall() 
         length = len(''.join(paragraph_list))

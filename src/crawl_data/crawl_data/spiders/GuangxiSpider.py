@@ -43,6 +43,7 @@ class GuangxiSpider(scrapy.Spider):
     def parse_content(self, response):
         UID = response.url.split('=')[-1]
         paragraph_list = response.css('div.article-con p *::text').getall()         
+        attachment_link = response.css('div.article-con p a::attr(href)').getall()         
         
         if len(paragraph_list) == 0:
             paragraph_list =  response.css('p *::text').getall() 
@@ -58,6 +59,7 @@ class GuangxiSpider(scrapy.Spider):
         return {
             'UID': UID,
             'mainText': paragraph_list,
+            'attachment_link':attachment_link,
             'crawl state':state,
             'text length':length,
         }

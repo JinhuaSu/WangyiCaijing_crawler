@@ -46,6 +46,8 @@ class ShanghaiSpider(scrapy.Spider):
         doc_info_dict['relative_doc_titles'] = response.css('ul.nowrapli li a::attr(title)').getall()
         doc_info_dict['relative_doc_links'] = response.css('ul.nowrapli li a::attr(href)').getall()
         paragraph_list = response.css('div#ivs_content p::text').getall()
+        attachment_link = response.css('a.download0301::attr(href)').getall()
+        
         if len(paragraph_list) == 0:
             paragraph_list =  response.css('p *::text').getall() 
         Filenum = None
@@ -65,6 +67,7 @@ class ShanghaiSpider(scrapy.Spider):
             'doc_info_dict': doc_info_dict,
             'url':response.url,
             'mainText': paragraph_list,
+            'attachment_link': attachment_link,
             'FileNumber':Filenum,
             'crawl state':state,
             'text length':length,
