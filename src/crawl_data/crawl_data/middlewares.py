@@ -10,6 +10,8 @@ from scrapy.http import HtmlResponse
 import time
 import random
 from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware   
+import requests
+import json
 
 user_agent_list = [
         "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.1 "
@@ -152,11 +154,28 @@ class CrawlDataDownloaderMiddleware(object):
 
 
 class SeleniumDownloaderMiddleware(object):
+    def __init__(self):
+        self.lasttime = time.time()
+        self.lastip = self.get_proxy()
     
     # 可以拦截到request请求
     def process_request(self, request, spider):
-        # 在进行url访问之前可以进行的操作, 更换UA请求头, 使用其他代理等
-        pass
+        if spider.name in ['Central']:
+            t = time.time()
+            if t - self.lasttime <= 10:
+                ret_proxy = self.lastip
+            else:
+                ret_proxy = self.get_proxy()
+                if len(ret_proxy) > 0:
+                    self.lastip = ret_proxy
+                    self.lasttime = t
+                else:
+                    ret_proxy = self.lastip
+            request.meta["proxy"] = ret_proxy
+            print("为%s添加代理%s" %(request.url,ret_proxy), end="")
+        else:
+            # 在进行url访问之前可以进行的操作, 更换UA请求头, 使用其他代理等
+            pass
 
     # 可以拦截到response响应对象(拦截下载器传递给Spider的响应对象)
     def process_response(self, request, response, spider):
@@ -183,32 +202,30 @@ class SeleniumDownloaderMiddleware(object):
 
     # 请求出错了的操作, 比如ip被封了,可以在这里设置ip代理
     def process_exception(self, request, exception, spider):
-        # print("添加代理开始")
-        # ret_proxy = get_proxy()
-        # request.meta["proxy"] = ret_proxy
-        # print("为%s添加代理%s" %(request.url,ret_proxy), end="")
-        # return request
-        return None
+        if spider.name in ['Central']:
+            print("添加代理开始")
+            t = time.time()
+            if t - self.lasttime <= 10:
+                ret_proxy = self.lastip
+            else:
+                ret_proxy = self.get_proxy()
+                if len(ret_proxy) > 0:
+                    self.lastip = ret_proxy
+                    self.lasttime = t
+                else:
+                    ret_proxy = self.lastip
+            request.meta["proxy"] = ret_proxy
+            print("为%s添加代理%s" %(request.url,ret_proxy), end="")
+            return request
+        else:
+            return None
 
-def get_proxy():
-    s = """58.218.92.78:5534
-58.218.92.69:7747
-58.218.92.75:7476
-58.218.92.75:4365
-58.218.92.75:2827
-58.218.92.75:6485
-58.218.92.72:2116
-58.218.92.73:9468
-58.218.92.75:6387
-58.218.92.78:5215
-58.218.92.78:9543
-58.218.92.72:5049
-58.218.92.69:8833
-58.218.92.73:6617
-58.218.92.73:7820
-58.218.92.73:7205
-58.218.92.73:9438
-58.218.92.75:7360
-58.218.92.78:8745"""
-    ip_list = ['http://'+ ip for ip in s.split('\n')]
-    return random.choice(ip_list)
+    def get_proxy(self):
+        url = "https://api.xiaoxiangdaili.com/ip/get?appKey=571491556088238080&appSecret=6VZhoE4G&cnt=1&method=http&releaseAuto=false&wt=json"
+
+        s = ''
+        resp = requests.get(url)
+        if resp.status_code == 200:
+            x = json.loads(resp.text)
+            s = 'http://%s:%s' %(x['data'][0]['ip'],x['data'][0]['port'])
+        return s

@@ -69,8 +69,8 @@ class Shaanxi_shanSpider(scrapy.Spider):
             paragraph_list =  response.css('p *::text').getall() 
         if len(paragraph_list) == 0:
             paragraph_list =  response.css('*::text').getall() 
-        attach = response.css('div.xzfwj_rig a[href$=".pdf"]::attr(href)').get()
-        attach = response.urljoin(attach)
+        attach = response.css('a[href$=".pdf"]::attr(href)').getall()
+        attach = [response.urljoin(x) for x in attach]
         length = len(''.join(paragraph_list))
         if length > 0:
             state = 'full'
@@ -84,7 +84,7 @@ class Shaanxi_shanSpider(scrapy.Spider):
             'UID': UID,
             'doc_info_dict': doc_info_dict,
             'mainText': paragraph_list,
-            'attachment_links': attach,
+            'attachment_link': attach,
             'crawl state':state,
             'text length':length,
         }
