@@ -43,9 +43,9 @@ class PolicyMongoPipeline(object):
             #data_list.append({key:value for key,value in  raw_dict.items() if key in ['UID','title','date','url']})
             try:
                 if raw_dict['crawl state'] == 'full':
-                    data_list.append({key:raw_dict[key] for key in ['UID','title','date','url','FileNumber','crawl state','text length']})
+                    data_list.append({key:raw_dict[key] for key in ['UID','name','IdentityNum','url','pageNo','No','crawl state','doc_info_dict']})
                 else:
-                    empty_list.append({key:raw_dict[key] for key in ['UID','title','date','url','FileNumber','crawl state','text length']})
+                    empty_list.append({key:raw_dict[key] for key in ['UID','name','IdentityNum','url','pageNo','No','crawl state']})
             except:
                 print(raw_dict)
         df = pd.DataFrame(data_list)

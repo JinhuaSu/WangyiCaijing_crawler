@@ -155,8 +155,9 @@ class CrawlDataDownloaderMiddleware(object):
 
 class SeleniumDownloaderMiddleware(object):
     def __init__(self):
-        self.lasttime = time.time()
-        self.lastip = self.get_proxy()
+        if False:
+            self.lasttime = time.time()
+            self.lastip = self.get_proxy()
     
     # 可以拦截到request请求
     def process_request(self, request, spider):
