@@ -155,13 +155,14 @@ class CrawlDataDownloaderMiddleware(object):
 
 class SeleniumDownloaderMiddleware(object):
     def __init__(self):
-        if False:
+        use_proxy =True
+        if use_proxy:
             self.lasttime = time.time()
             self.lastip = self.get_proxy()
     
     # 可以拦截到request请求
     def process_request(self, request, spider):
-        if spider.name in ['Central']:
+        if spider.name in ['Central','WangyiCaijing']:
             t = time.time()
             if t - self.lasttime <= 10:
                 ret_proxy = self.lastip
@@ -203,7 +204,7 @@ class SeleniumDownloaderMiddleware(object):
 
     # 请求出错了的操作, 比如ip被封了,可以在这里设置ip代理
     def process_exception(self, request, exception, spider):
-        if spider.name in ['Central']:
+        if spider.name in ['Central','WangyiCaijing']:
             print("添加代理开始")
             t = time.time()
             if t - self.lasttime <= 10:
@@ -222,7 +223,7 @@ class SeleniumDownloaderMiddleware(object):
             return None
 
     def get_proxy(self):
-        url = "https://api.xiaoxiangdaili.com/ip/get?appKey=571491556088238080&appSecret=6VZhoE4G&cnt=1&method=http&releaseAuto=false&wt=json"
+        url = "https://api.xiaoxiangdaili.com/ip/get?appKey=611007269433659392&appSecret=TZwG0Y1s&cnt=1&method=http&releaseAuto=false&wt=json"
 
         s = ''
         resp = requests.get(url)

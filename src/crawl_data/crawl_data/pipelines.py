@@ -40,20 +40,19 @@ class PolicyMongoPipeline(object):
         data_list = []
         empty_list = []
         for raw_dict in table.find():
-            #data_list.append({key:value for key,value in  raw_dict.items() if key in ['UID','title','date','url']})
             try:
                 if raw_dict['crawl state'] == 'full':
-                    data_list.append({key:raw_dict[key] for key in ['UID','name','IdentityNum','url','pageNo','No','crawl state','doc_info_dict']})
+                    data_list.append({key:raw_dict[key] for key in ['UID','code','title','date','url','No','crawl state','title_detail','time','source','content']})
                 else:
-                    empty_list.append({key:raw_dict[key] for key in ['UID','name','IdentityNum','url','pageNo','No','crawl state']})
+                    empty_list.append({key:raw_dict[key] for key in ['UID','code','title','date','url','No','crawl state']})
             except:
                 print(raw_dict)
         df = pd.DataFrame(data_list)
         print(df)
-        df.to_csv('../../data/csv/%s_news_list.csv' % spider.name,encoding='utf-8')
+        df.to_csv('../../data/csv/%s_news_list.csv' % spider.name,encoding='utf-8-sig')
         df = pd.DataFrame(empty_list)
         print(df)
-        df.to_csv('../../data/empty/%s_empty_list.csv' % spider.name,encoding='utf-8')
+        df.to_csv('../../data/empty/%s_empty_list.csv' % spider.name,encoding='utf-8-sig')
         self.client.close()
 
     def process_item(self, item, spider):

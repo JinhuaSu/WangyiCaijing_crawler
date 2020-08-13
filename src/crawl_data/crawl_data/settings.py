@@ -72,7 +72,7 @@ ITEM_PIPELINES = {
     'crawl_data.pipelines.PolicyMongoPipeline': 400
 }
 MONGO_URI = 'mongodb://localhost:27017'
-MONGO_DB = 'Uncredit'
+MONGO_DB = 'SmartData'
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://docs.scrapy.org/en/latest/topics/autothrottle.html
